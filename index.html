@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Ujian Mandiri ATC - TKR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+<body class="bg-blue-950 min-h-screen p-4 md:p-8 flex items-center justify-center">
+    <div id="formRegistrasi" class="w-full max-w-md bg-slate-900 rounded-3xl shadow-2xl p-6 border border-blue-800">
+        <h1 class="text-lg font-bold text-orange-500 mb-1">Registrasi Pembagian Sesi</h1>
+        <p class="text-xs text-slate-400 mb-6">Ujian Praktik TKR PAT Genap 2025-2026</p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">Pilih Nama Siswa</label>
+                <select id="selectNama" class="w-full bg-black text-white">
+                    <option value="">-- Cari Nama Anda --</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Kelas</label>
+                    <input type="text" value="X TKR 2" readonly class="w-full p-3 border border-slate-800 rounded-xl text-sm bg-black text-slate-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">NIPD</label>
+                    <input type="text" id="displayNipd" readonly class="w-full p-3 border border-slate-800 rounded-xl text-sm bg-black text-white font-mono">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">Nomor Peserta Ujian</label>
+                <input type="text" id="displayNoPeserta" readonly class="w-full p-3 border border-slate-800 rounded-xl text-sm bg-black text-white font-mono">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">Sesi Ujian</label>
+                <input type="text" id="displaySesi" readonly class="w-full p-3 border border-slate-800 rounded-xl text-sm bg-black text-green-400 font-bold">
+            </div>
+
+            <button onclick="generateKartu()" class="w-full bg-orange-600 text-white py-4 rounded-xl font-bold hover:bg-orange-500 transition shadow-lg">
+                Buat Kartu Ujian
+            </button>
+        </div>
+    </div>
+
+    <div id="areaKartu" class="mt-8 hidden w-full max-w-md">
+        <div id="kartu-ujian" class="bg-white p-8 rounded-2xl shadow-2xl border-4 border-green-600 text-slate-900">
+            <div class="text-center border-b-2 border-orange-600 pb-4 mb-4">
+                <h2 class="font-extrabold text-lg text-black tracking-tight uppercase">Kartu Sesi Ujian TKR</h2>
+                <p class="text-[10px] font-bold text-slate-600">PAT GENAP 2025-2026</p>
+            </div>
+            <div class="space-y-3 text-sm">
+                <p><strong>Nama:</strong> <span id="resNama" class="uppercase font-semibold"></span></p>
+                <p><strong>Kelas:</strong> <span id="resKelas">X TKR 2</span></p>
+                <p><strong>NIPD:</strong> <span id="resNipd" class="font-mono"></span></p>
+                <p><strong>No. Peserta:</strong> <span id="resNoPeserta" class="font-mono font-bold"></span></p>
+                <p><strong>Sesi:</strong> <span id="resSesi" class="font-bold text-green-700"></span></p>
+                <div class="pt-4 mt-2 border-t border-slate-300 border-dashed">
+                    <p class="text-[10px] uppercase text-slate-500 italic">Guru Penguji:</p>
+                    <p class="font-bold text-orange-600">Adhitya Anugrah Rizki, S.T., Gr.</p>
+                </div>
+            </div>
+            <div class="mt-8 text-[9px] text-slate-400 text-center uppercase tracking-widest border-t border-slate-200 pt-2">
+                SMK Karya Bahana Mandiri
+            </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+            <button onclick="kembali()" class="flex-1 bg-blue-950 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-900">
+                Kembali
+            </button>
+            <button onclick="unduh()" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-green-700">
+                Download JPG
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const dataSiswa = [
+            { nipd: "252610130", noPeserta: "1012042", nama: "ADITYA ILHAM SYAHPUTRA", sesi: "Sesi 2" },
+            { nipd: "252610131", noPeserta: "1012043", nama: "AKBAR DWI AL FARIZI", sesi: "Sesi 1" },
+            { nipd: "252610132", noPeserta: "1012044", nama: "ANANDA PRAMANA", sesi: "Sesi 1" },
+            { nipd: "252610134", noPeserta: "1012046", nama: "ARIFIN ILHAM", sesi: "Sesi 1" },
+            { nipd: "252610135", noPeserta: "1012047", nama: "ASYRAF MADE DERY GUNAWAN", sesi: "Sesi 3" },
+            { nipd: "252610136", noPeserta: "1012048", nama: "AZAM ALI OKTAVIANDI", sesi: "Sesi 2" },
+            { nipd: "252610137", noPeserta: "1012049", nama: "DAFFA AL GHANY PUTRA", sesi: "Sesi 1" },
+            { nipd: "252610138", noPeserta: "1012050", nama: "DAVA OKTA PRATAMA", sesi: "Sesi 2" },
+            { nipd: "252610139", noPeserta: "1012051", nama: "DIKA FAUZAN AHMAD", sesi: "Sesi 1" },
+            { nipd: "252610140", noPeserta: "1012052", nama: "DIMAS ADI FIRNANDA", sesi: "Sesi 1" },
+            { nipd: "252610141", noPeserta: "1012053", nama: "FADILAH SAFARUDIN", sesi: "Sesi 2" },
+            { nipd: "252610142", noPeserta: "1012054", nama: "FADLY HIDAYATULLAH", sesi: "Sesi 2" },
+            { nipd: "252610143", noPeserta: "1012055", nama: "FAHMI ALFI HUSNI", sesi: "Sesi 3" },
+            { nipd: "252610144", noPeserta: "1012056", nama: "HIKMAH AMIRUL FIKRI", sesi: "Sesi 2" },
+            { nipd: "252610145", noPeserta: "1012057", nama: "IBNU ALKABIAN RAMADHANI", sesi: "Sesi 1" },
+            { nipd: "252610146", noPeserta: "1012058", nama: "IKHSAN AWALLUDIN", sesi: "Sesi 1" },
+            { nipd: "252610147", noPeserta: "1012059", nama: "M RIZKY ARDIANSYAH PUTRA", sesi: "Sesi 2" },
+            { nipd: "252610148", noPeserta: "1012060", nama: "MADA ANGGALA", sesi: "Sesi 1" },
+            { nipd: "252610150", noPeserta: "1012061", nama: "MUHAMAD AZIDAN FAREL", sesi: "Sesi 1" },
+            { nipd: "252610159", noPeserta: "1012063", nama: "MUHAMAD RAIHAN REFANO", sesi: "Sesi 2" },
+            { nipd: "252610151", noPeserta: "1012064", nama: "MUHAMMAD FARIH AL MUBAROK", sesi: "Sesi 1" },
+            { nipd: "252610152", noPeserta: "1012065", nama: "MUHAMMAD KHADAPI", sesi: "Sesi 1" },
+            { nipd: "252610153", noPeserta: "1012066", nama: "MUHAMMAD LUTHFI", sesi: "Sesi 2" },
+            { nipd: "252610155", noPeserta: "1012067", nama: "MUHAMMAD REVAN ALFA RIZKY", sesi: "Sesi 3" },
+            { nipd: "252610156", noPeserta: "1012068", nama: "NEVAL ARRAHMAN", sesi: "Sesi 3" },
+            { nipd: "252610157", noPeserta: "1012069", nama: "RAFAEL SEPTIAN MANGU RAEWURA", sesi: "Sesi 3" },
+            { nipd: "252610158", noPeserta: "1012070", nama: "RAISYA AQIL MAULANA", sesi: "Sesi 3" },
+            { nipd: "252610154", noPeserta: "1012071", nama: "RAYANDRI", sesi: "Sesi 2" },
+            { nipd: "252610160", noPeserta: "1012072", nama: "RAYHAN RIZKY MAULIDAN", sesi: "Sesi 2" },
+            { nipd: "252610161", noPeserta: "1012073", nama: "REZQ AL DIANSYAH", sesi: "Sesi 2" },
+            { nipd: "252610162", noPeserta: "1012074", nama: "RIDHO AL FADILLAH", sesi: "Sesi 2" },
+            { nipd: "252610163", noPeserta: "1012075", nama: "RIO HERMAWAN", sesi: "Sesi 1" },
+            { nipd: "252610164", noPeserta: "1012076", nama: "RISKI ARDIANSYAH", sesi: "Sesi 1" },
+            { nipd: "252610165", noPeserta: "1012077", nama: "RIZQI MUHAMAD ALFATIR", sesi: "Sesi 2" },
+            { nipd: "252610167", noPeserta: "1012079", nama: "SATRIA REPAL FAUZI", sesi: "Sesi 2" },
+            { nipd: "252610168", noPeserta: "1012080", nama: "SEFANI", sesi: "Sesi 3" },
+            { nipd: "252610169", noPeserta: "1012081", nama: "SYARIFUDIN HIDAYATTULLAH", sesi: "Sesi 3" },
+            { nipd: "252610170", noPeserta: "1012082", nama: "YAJIB SURYO", sesi: "Sesi 2" },
+            { nipd: "252610171", noPeserta: "1012083", nama: "ZAINUR ROZIQIN", sesi: "Sesi 3" },
+            { nipd: "252610172", noPeserta: "1012084", nama: "ZIYA UL HAQ", sesi: "Sesi 1" }
+        ];
+
+        $(document).ready(function() {
+            dataSiswa.sort((a,b) => a.nama.localeCompare(b.nama));
+            const select = $('#selectNama');
+            dataSiswa.forEach(s => {
+                select.append(`<option value="${s.nama}">${s.nama}</option>`);
+            });
+            select.select2({ placeholder: "Cari nama siswa..." });
+            
+            select.on('change', function() {
+                const siswa = dataSiswa.find(s => s.nama === $(this).val());
+                if(siswa) {
+                    $('#displayNipd').val(siswa.nipd);
+                    $('#displayNoPeserta').val(siswa.noPeserta);
+                    $('#displaySesi').val(siswa.sesi);
+                } else {
+                    $('#displayNipd').val("");
+                    $('#displayNoPeserta').val("");
+                    $('#displaySesi').val("");
+                }
+            });
+        });
+
+        function generateKartu() {
+            const nama = $('#selectNama').val();
+            if(!nama) return alert("Harap pilih nama siswa!");
+            $('#resNama').text(nama);
+            $('#resNipd').text($('#displayNipd').val());
+            $('#resNoPeserta').text($('#displayNoPeserta').val());
+            $('#resSesi').text($('#displaySesi').val());
+            $('#formRegistrasi').addClass('hidden');
+            $('#areaKartu').removeClass('hidden');
+        }
+
+        function kembali() {
+            $('#formRegistrasi').removeClass('hidden');
+            $('#areaKartu').addClass('hidden');
+        }
+
+        async function unduh() {
+            const el = document.getElementById('kartu-ujian');
+            const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff" });
+            const link = document.createElement('a');
+            link.download = 'Kartu_Ujian_Praktik.jpg';
+            link.href = canvas.toDataURL('image/jpeg');
+            link.click();
+        }
+    </script>
+</body>
+</html>
